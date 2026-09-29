@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Theory of Computation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#eaeef5; --panel:#ffffff; --panel-2:#f4f6fb; --ink:#14213d; --ink-soft:#3b4763; --muted:#66708a; --line:#cfd6e5;
+  --accent:#2f4bff; --accent-ink:#ffffff; --accent-soft:#e4e9ff; --hl:#ffd23f; --hl-ink:#3a2f00;
+  --ok:#0b8a4d; --ok-soft:#dcf5e7; --bad:#c62828; --bad-soft:#fde6e6; --dots:#c3cbdd;
+  --head:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1220; --panel:#151c2e; --panel-2:#1b2439; --ink:#e7ebf6; --ink-soft:#b6bfd6; --muted:#8792ae; --line:#2b3654;
+    --accent:#8da2ff; --accent-ink:#0d1220; --accent-soft:#232f5c; --hl:#ffd23f; --hl-ink:#2b2200;
+    --ok:#5fd394; --ok-soft:#12352a; --bad:#ff8a8a; --bad-soft:#3b1a1f; --dots:#26304b;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1220; --panel:#151c2e; --panel-2:#1b2439; --ink:#e7ebf6; --ink-soft:#b6bfd6; --muted:#8792ae; --line:#2b3654;
+  --accent:#8da2ff; --accent-ink:#0d1220; --accent-soft:#232f5c; --hl:#ffd23f; --hl-ink:#2b2200;
+  --ok:#5fd394; --ok-soft:#12352a; --bad:#ff8a8a; --bad-soft:#3b1a1f; --dots:#26304b;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.55 var(--body);-webkit-text-size-adjust:100%}
+code,.mono{font-family:var(--mono);font-size:.92em}
+code{background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:0 .3em}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px}
+
+.wrap{max-width:1240px;margin:0 auto;padding:20px 18px 60px}
+.top{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.brand{display:flex;gap:14px;align-items:center}
+.mark{width:52px;height:52px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font:700 30px/1 var(--head);position:relative;flex:none}
+.mark::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1.5px solid var(--ink)}
+h1{font:700 clamp(24px,4vw,34px)/1.05 var(--head);margin:0;letter-spacing:-.02em}
+.brand p{margin:3px 0 0;color:var(--muted);font-size:14px}
+h2{font:700 19px/1.2 var(--head);margin:0 0 10px;letter-spacing:-.01em}
+h3{font:700 16px/1.25 var(--head);margin:0}
+
+.tabs{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px}
+.tab{border:0;background:transparent;padding:8px 18px;border-radius:999px;cursor:pointer;font-weight:600;color:var(--ink-soft)}
+.tab:hover{background:var(--panel-2)}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+
+.panel[hidden]{display:none}
+.grid2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start}
+.tests{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px;margin-top:16px;align-items:start}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;align-items:start}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card > p:first-of-type{margin-top:0}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.stack{display:flex;flex-direction:column;gap:16px;margin-top:16px}
+
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.bar .grow{flex:1}
+.btn{border:1px solid var(--ink);background:var(--ink);color:var(--bg);padding:7px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px}
+.btn:hover{filter:brightness(1.15)}
+.btn.soft{background:var(--accent-soft);color:var(--ink);border-color:transparent}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{background:var(--panel-2);filter:none}
+.btn.accent{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.sm{padding:4px 10px;font-size:13px;border-radius:7px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:0;background:var(--panel);padding:7px 13px;cursor:pointer;font-weight:600;font-size:14px;color:var(--ink-soft)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-checked="true"]{background:var(--accent);color:var(--accent-ink)}
+select,input[type=text],textarea{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:0}
+select{cursor:pointer}
+input[type=text]:focus,textarea:focus{border-color:var(--accent)}
+textarea{width:100%;font-family:var(--mono);font-size:14px;resize:vertical}
+label.fld{display:block;font-weight:600;font-size:14px;margin-bottom:10px}
+label.fld input[type=text]{display:block;width:100%;margin-top:5px;font-family:var(--mono);font-weight:400}
+label.fld small{display:block;font-weight:400;color:var(--muted);margin-top:4px}
+label.chk{display:inline-flex;gap:7px;align-items:center;font-size:14px;cursor:pointer}
+
+/* graph */
+.graph{display:block;color:var(--ink-soft)}
+.canvas{width:100%;height:auto;aspect-ratio:760/400;border-radius:10px;border:1px solid var(--line);touch-action:pan-y;
+  background-color:var(--panel-2);background-image:radial-gradient(var(--dots) 1.1px,transparent 1.2px);background-size:22px 22px}
+.gwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background-color:var(--panel-2);background-image:radial-gradient(var(--dots) 1.1px,transparent 1.2px);background-size:22px 22px;padding:2px}
+.graph .edge{fill:none;stroke:var(--ink-soft);stroke-width:1.5}
+.graph .arr{fill:var(--ink-soft)}
+.graph .elabel{font:500 13px var(--mono);fill:var(--ink);paint-order:stroke;stroke:var(--panel-2);stroke-width:5px;stroke-linejoin:round}
+.graph .node{cursor:grab;touch-action:none}
+.graph .node:active{cursor:grabbing}
+.graph .node circle{fill:var(--panel);stroke:var(--ink);stroke-width:1.7;transition:fill .15s}
+.graph .node .inner{fill:none;stroke-width:1.3}
+.graph .node.on circle:first-child{fill:var(--hl);stroke:var(--ink);stroke-width:2.6}
+.graph .nl{font-family:var(--mono);font-weight:500;fill:var(--ink);text-anchor:middle;pointer-events:none;user-select:none}
+.graph .node.on .nl{fill:var(--hl-ink)}
+.graph.static .node{cursor:default}
+.hint{color:var(--muted);font-size:13px;margin:8px 0 0}
+
+/* definition table */
+.tablewrap{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse}
+.tt th,.tt td{padding:3px 4px;text-align:center}
+.tt th{font:600 13px var(--mono);color:var(--muted);padding-bottom:6px}
+.tt th.sym{color:var(--ink)}
+.tt input[type=text]{width:74px;padding:5px 7px;font:400 13px var(--mono);text-align:center}
+.tt input.nm{width:84px;font-weight:500}
+.tt input.bad{border-color:var(--bad);background:var(--bad-soft)}
+.tt input[type=radio],.tt input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);cursor:pointer}
+.tt .del{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px;border-radius:6px}
+.tt .del:hover{background:var(--bad-soft);color:var(--bad)}
+.pill{display:inline-block;border-radius:999px;padding:3px 12px;font-size:13px;font-weight:600}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.info{background:var(--accent-soft);color:var(--ink)}
+.pill.warn{background:var(--hl);color:var(--hl-ink)}
+
+/* tests */
+.verdict{display:inline-block;font:700 15px var(--head);padding:4px 14px;border-radius:8px;margin:2px 0 8px}
+.verdict.ok{background:var(--ok);color:#fff}
+.verdict.bad{background:var(--bad);color:#fff}
+.verdict.err{background:var(--panel-2);color:var(--bad);border:1px solid var(--bad)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.chip{border:1px solid var(--line);background:var(--panel-2);border-radius:8px;padding:3px 9px;font:400 13px var(--mono);cursor:default}
+button.chip{cursor:pointer;text-align:left}
+button.chip small{display:block;color:var(--muted);font:500 11px var(--body)}
+button.chip[aria-pressed="true"]{border-color:var(--ink);background:var(--hl);color:var(--hl-ink)}
+button.chip[aria-pressed="true"] small{color:var(--hl-ink)}
+.res{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:3px;max-height:220px;overflow:auto}
+.res li{display:flex;gap:10px;align-items:center;font:400 13px var(--mono);padding:3px 8px;border-radius:6px}
+.res li.ok{background:var(--ok-soft)}.res li.bad{background:var(--bad-soft)}
+.res li b{font-family:var(--body);margin-left:auto;font-size:12px}
+.res li.ok b{color:var(--ok)}.res li.bad b{color:var(--bad)}
+.counts{width:100%;font:400 12.5px var(--mono);margin:8px 0}
+.counts td,.counts th{border-bottom:1px solid var(--line);padding:3px 8px;text-align:right}
+.counts th:first-child,.counts td:first-child{text-align:left}
+.counts th{color:var(--muted);font-weight:500}
+input[type=range]{width:160px;accent-color:var(--accent)}
+
+/* results */
+.rcard .head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+.rcard .desc{margin:0 0 10px;color:var(--ink-soft);font-size:14px;max-width:80ch}
+.st th,.st td{border:1px solid var(--line);padding:4px 10px;font:400 13px var(--mono);text-align:center}
+.st th{background:var(--panel-2);font-weight:500;color:var(--muted)}
+.st td.mk{color:var(--accent);font-weight:700;text-align:right;background:var(--panel-2)}
+.st td.q{text-align:left;font-weight:500}
+details{margin-top:10px}
+summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--ink-soft)}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+.reout{font:500 17px/1.5 var(--mono);background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;word-break:break-all;margin:8px 0}
+.err{color:var(--bad);font-weight:600;font-size:14px;min-height:1.4em;margin:6px 0 0}
+.qi{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.qi button{border:1px solid var(--line);background:var(--panel);border-radius:7px;font:500 14px var(--mono);padding:2px 10px;cursor:pointer}
+.qi button:hover{background:var(--accent-soft)}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--ink);color:var(--bg);padding:9px 18px;border-radius:10px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:9;max-width:90vw}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><div class="mark" aria-hidden="true">δ</div>
+    <div><h1>Theory of Computation</h1><p>Build, test and convert finite automata and regular expressions.</p></div></div>
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" data-tab="editor" aria-selected="true">Build &amp; test</button>
+    <button class="tab" role="tab" data-tab="convert" aria-selected="false">Convert</button>
+    <button class="tab" role="tab" data-tab="regex" aria-selected="false">Regex</button>
+  </nav>
+</header>
+
+<main>
+<section id="panel-editor" class="panel">
+  <div class="grid2">
+    <div class="card">
+      <div class="bar">
+        <div class="seg" id="modeSeg" role="radiogroup" aria-label="Machine type">
+          <button role="radio" data-mode="DFA">DFA</button><button role="radio" data-mode="NFA">NFA</button><button role="radio" data-mode="ENFA">ε-NFA</button>
+        </div>
+        <select id="exSel" aria-label="Load an example"></select>
+        <span class="grow"></span>
+        <button class="btn ghost sm" id="btnLayout">Auto-layout</button>
+        <button class="btn ghost sm" id="btnClear">Clear</button>
+      </div>
+      <svg id="editorSvg" class="graph canvas" viewBox="0 0 760 400" role="img" aria-label="Automaton diagram"></svg>
+      <p class="hint">Drag a state to move it. Double-click empty space to add one. An arrow marks the start state; a double ring marks an accepting state.</p>
+    </div>
+    <div class="card">
+      <h2>Definition</h2>
+      <label class="fld">Alphabet Σ
+        <input type="text" id="alpha" autocomplete="off" spellcheck="false">
+        <small>One character per symbol: <code>0,1</code>, <code>01</code> and <code>0 1</code> all mean the same.</small>
+      </label>
+      <div id="status"></div>
+      <div class="tablewrap"><div id="ttHost"></div></div>
+      <button class="btn soft" id="btnAdd">Add state</button>
+      <p class="hint">Type target states separated by commas. Leave a cell empty for no transition.</p>
+    </div>
+  </div>
+
+  <div class="tests">
+    <div class="card">
+      <h2>Test a string</h2>
+      <div class="bar"><input type="text" id="tstr" placeholder="e.g. 0110 (ε for the empty string)" autocomplete="off" spellcheck="false" style="flex:1;min-width:0;font-family:var(--mono)">
+      <button class="btn sm" id="btnAnim">Animate</button></div>
+      <div id="simOut"></div>
+    </div>
+    <div class="card">
+      <h2>Test many strings</h2>
+      <textarea id="batch" rows="5" placeholder="One string per line&#10;Write ε for the empty string" spellcheck="false"></textarea>
+      <div id="batchOut"></div>
+    </div>
+    <div class="card">
+      <h2>Explore the language</h2>
+      <div class="bar"><label class="chk">Strings up to length <input type="range" id="maxlen" min="0" max="10" value="4"><b id="maxlenV" class="mono">4</b></label></div>
+      <div id="expOut"></div>
+    </div>
+  </div>
+</section>
+
+<section id="panel-convert" class="panel" hidden>
+  <div class="card">
+    <h2>Convert the automaton in the editor</h2>
+    <p class="muted" style="margin-top:0;max-width:75ch">Each step shows the new diagram, its table, and an exact check that it accepts the same language as the source. Send any result back to the editor to keep working with it.</p>
+    <div class="bar">
+      <button class="btn" id="cvEN">ε-NFA to NFA</button>
+      <button class="btn" id="cvND">NFA to DFA</button>
+      <button class="btn accent" id="cvAll">Full pipeline: ε-NFA to NFA to DFA</button>
+    </div>
+    <div class="bar" style="margin:0">
+      <label class="chk"><input type="checkbox" id="optDead" checked> Keep the dead state ∅ (complete DFA)</label>
+      <label class="chk"><input type="checkbox" id="optCompact"> Short DFA names (D0, D1, …)</label>
+    </div>
+  </div>
+  <div id="convOut" class="stack"></div>
+</section>
+
+<section id="panel-regex" class="panel" hidden>
+  <div class="two">
+    <div class="card">
+      <h2>Regular expression to ε-NFA</h2>
+      <p class="muted small" style="margin-top:0">Thompson's construction. Use <code>|</code> for union, <code>*</code> zero or more, <code>+</code> one or more, <code>?</code> optional, and <code>ε</code> or <code>∅</code> for the empty string and empty language. Put <code>\</code> before a symbol that looks like an operator.</p>
+      <input type="text" id="reIn" value="(a|b)*abb" autocomplete="off" spellcheck="false" style="width:100%;font:500 17px var(--mono)" aria-label="Regular expression">
+      <div class="qi" id="reKeys"></div>
+      <label class="fld" style="margin-top:6px">Extra alphabet symbols (optional)<input type="text" id="reAlpha" autocomplete="off" spellcheck="false" placeholder="symbols beyond those used in the expression"></label>
+      <div class="err" id="reErr" role="alert"></div>
+      <div class="acts" style="margin-top:4px"><button class="btn" id="reBuild">Build ε-NFA</button></div>
+    </div>
+    <div class="card">
+      <h2>Automaton to regular expression</h2>
+      <p class="muted small" style="margin-top:0">State elimination on the automaton currently in the editor. It works for DFAs, NFAs and ε-NFAs. The result is checked against the original.</p>
+      <div class="acts" style="margin-top:0"><button class="btn" id="reFrom">Find regex for the editor's automaton</button></div>
+      <div id="reOut"></div>
+    </div>
+  </div>
+  <div id="reCards" class="stack"></div>
+</section>
+</main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// #CORE-START
+const EPS = 'ε';
+const MODE_NAME = { DFA: 'DFA', NFA: 'NFA', ENFA: 'ε-NFA' };
+const clone = o => JSON.parse(JSON.stringify(o));
+
+function newAuto(mode = 'NFA') { return { mode, alphabet: [], states: [], start: null, accept: [], delta: {}, pos: {} }; }
+function T(A, q, s) { return (A.delta[q] && A.delta[q][s]) || []; }
+function setT(A, q, s, arr) {
+  if (!A.delta[q]) A.delta[q] = {};
+  if (arr.length) A.delta[q][s] = arr; else delete A.delta[q][s];
+}
+function addT(A, q, s, t) { const c = T(A, q, s); if (!c.includes(t)) setT(A, q, s, [...c, t]); }
+function hasEps(A) { return A.states.some(q => T(A, q, EPS).length > 0); }
+function orderMap(A) { const m = new Map(); A.states.forEach((s, i) => m.set(s, i)); return m; }
+function sortSet(A, set, m) { m = m || orderMap(A); return [...set].sort((a, b) => m.get(a) - m.get(b)); }
+
+function closure(A, seed) {
+  const seen = new Set(seed), st = [...seed];
+  while (st.length) {
+    const q = st.pop();
+    for (const t of T(A, q, EPS)) if (!seen.has(t)) { seen.add(t); st.push(t); }
+  }
+  return seen;
+}
+function move(A, set, a) { const out = new Set(); for (const q of set) for (const t of T(A, q, a)) out.add(t); return out; }
+function stepSet(A, set, a) { return closure(A, move(A, set, a)); }
+function startSet(A) { return A.start != null && A.states.includes(A.start) ? closure(A, [A.start]) : new Set(); }
+function isAcc(A, set) { for (const q of set) if (A.accept.includes(q)) return true; return false; }
+
+function simulate(A, str) {
+  const syms = Array.from(str);
+  let cur = startSet(A);
+  const steps = [{ sym: null, set: sortSet(A, cur) }];
+  const bad = syms.find(c => !A.alphabet.includes(c));
+  if (bad !== undefined) return { error: `“${bad}” is not in the alphabet`, steps, accepted: false };
+  for (const c of syms) { cur = stepSet(A, cur, c); steps.push({ sym: c, set: sortSet(A, cur) }); }
+  return { steps, accepted: isAcc(A, cur) };
+}
+
+function enumerate(A, maxLen, cap = 150, budget = 60000) {
+  const acc = [], counts = [], totals = [];
+  let level = [{ s: '', set: startSet(A) }], done = -1, truncated = false;
+  for (let len = 0; len <= maxLen; len++) {
+    let c = 0;
+    for (const x of level) if (isAcc(A, x.set)) { c++; if (acc.length < cap) acc.push(x.s); }
+    counts[len] = c; totals[len] = level.length; done = len;
+    if (len === maxLen) break;
+    if (level.length * A.alphabet.length > budget) { truncated = true; break; }
+    const next = [];
+    for (const x of level) for (const a of A.alphabet) next.push({ s: x.s + a, set: stepSet(A, x.set, a) });
+    level = next;
+  }
+  return { acc, counts, totals, done, truncated };
+}
+
+function equivalent(A, B) {
+  const alpha = [...new Set([...A.alphabet, ...B.alphabet])];
+  const mA = orderMap(A), mB = orderMap(B);
+  const key = (a, b) => sortSet(A, a, mA).join('\u0001') + '\u0002' + sortSet(B, b, mB).join('\u0001');
+  const q = [{ a: startSet(A), b: startSet(B), s: '' }];
+  const seen = new Set([key(q[0].a, q[0].b)]);
+  for (let i = 0; i < q.length; i++) {
+    const x = q[i];
+    if (isAcc(A, x.a) !== isAcc(B, x.b)) return { ok: false, witness: x.s };
+    if (q.length > 60000) return { ok: null };
+    for (const c of alpha) {
+      const a = stepSet(A, x.a, c), b = stepSet(B, x.b, c), k = key(a, b);
+      if (!seen.has(k)) { seen.add(k); q.push({ a, b, s: x.s + c }); }
+    }
+  }
+  return { ok: true };
+}
+
+function classify(A) {
+  let eps = hasEps(A), nondet = false, missing = 0;
+  for (const q of A.states) for (const a of A.alphabet) {
+    const n = T(A, q, a).length;
+    if (n > 1) nondet = true;
+    if (n === 0) missing++;
+  }
+  return { cls: eps ? 'ENFA' : nondet ? 'NFA' : 'DFA', missing };
+}
+
+function removeEps(A) {
+  const N = newAuto('NFA'); N.alphabet = [...A.alphabet];
+  const closures = {};
+  A.states.forEach(q => closures[q] = sortSet(A, closure(A, [q])));
+  if (A.start == null || !A.states.includes(A.start)) return { auto: N, closures, dropped: [] };
+  const seen = new Set([A.start]), queue = [A.start];
+  for (let i = 0; i < queue.length; i++) {
+    const q = queue[i];
+    for (const a of A.alphabet) {
+      const tg = stepSet(A, new Set(closures[q]), a);
+      for (const t of tg) { if (!seen.has(t)) { seen.add(t); queue.push(t); } }
+      if (tg.size) { if (!N.delta[q]) N.delta[q] = {}; N.delta[q][a] = sortSet(A, tg); }
+    }
+  }
+  N.states = A.states.filter(q => seen.has(q));
+  N.start = A.start;
+  N.accept = N.states.filter(q => isAcc(A, new Set(closures[q])));
+  return { auto: N, closures, dropped: A.states.filter(q => !seen.has(q)) };
+}
+
+function subsetConstruct(A, { compact = false, dead = true } = {}) {
+  const D = newAuto('DFA'); D.alphabet = [...A.alphabet];
+  const members = {};
+  if (A.start == null || !A.states.includes(A.start)) return { auto: D, members };
+  const m = orderMap(A);
+  const keyOf = set => sortSet(A, set, m).join('\u0001');
+  const ids = new Map(), sets = [];
+  const register = set => {
+    const k = keyOf(set);
+    if (ids.has(k)) return { name: ids.get(k), fresh: false };
+    const arr = sortSet(A, set, m);
+    const name = compact ? 'D' + ids.size : (arr.length ? '{' + arr.join(',') + '}' : '∅');
+    ids.set(k, name); D.states.push(name); members[name] = arr; sets.push(set);
+    if (isAcc(A, set)) D.accept.push(name);
+    return { name, fresh: true };
+  };
+  D.start = register(closure(A, [A.start])).name;
+  for (let i = 0; i < sets.length; i++) {
+    const S = sets[i], sn = ids.get(keyOf(S));
+    for (const a of A.alphabet) {
+      const T2 = stepSet(A, S, a);
+      if (T2.size === 0 && !dead) continue;
+      const r = register(T2);
+      if (!D.delta[sn]) D.delta[sn] = {};
+      D.delta[sn][a] = [r.name];
+    }
+  }
+  return { auto: D, members };
+}
+
+// ---------- Regular expressions ----------
+const EPSN = { t: 'eps' }, EMPTYN = { t: 'empty' };
+function printRE(n, p = 0) {
+  switch (n.t) {
+    case 'sym': return /[|*+?()\\ε@#∅]/.test(n.c) ? '\\' + n.c : n.c;
+    case 'eps': return 'ε';
+    case 'empty': return '∅';
+    case 'star': return printRE(n.x, 4) + '*';
+    case 'cat': { const s = n.items.map(x => printRE(x, 2)).join(''); return p > 2 ? `(${s})` : s; }
+    case 'alt': {
+      const rest = n.items.filter(x => x.t !== 'eps');
+      if (rest.length < n.items.length) {
+        if (!rest.length) return 'ε';
+        const inner = rest.length === 1 ? printRE(rest[0], 4) : '(' + rest.map(x => printRE(x, 1)).join('|') + ')';
+        return inner + '?';
+      }
+      const s = n.items.map(x => printRE(x, 1)).join('|');
+      return p > 1 ? `(${s})` : s;
+    }
+  }
+}
+function mkAlt(a, b) {
+  if (a.t === 'empty') return b;
+  if (b.t === 'empty') return a;
+  let items = [];
+  for (const n of [a, b]) for (const x of (n.t === 'alt' ? n.items : [n])) if (!items.some(y => printRE(y) === printRE(x))) items.push(x);
+  if (items.some(x => x.t === 'star')) items = items.filter(x => x.t !== 'eps');
+  return items.length === 1 ? items[0] : { t: 'alt', items };
+}
+function mkCat(a, b) {
+  if (a.t === 'empty' || b.t === 'empty') return EMPTYN;
+  if (a.t === 'eps') return b;
+  if (b.t === 'eps') return a;
+  return { t: 'cat', items: [...(a.t === 'cat' ? a.items : [a]), ...(b.t === 'cat' ? b.items : [b])] };
+}
+function mkStar(a) {
+  if (a.t === 'empty' || a.t === 'eps') return EPSN;
+  if (a.t === 'star') return a;
+  if (a.t === 'alt' && a.items.some(x => x.t === 'eps')) {
+    const rest = a.items.filter(x => x.t !== 'eps');
+    return mkStar(rest.length === 1 ? rest[0] : { t: 'alt', items: rest });
+  }
+  return { t: 'star', x: a };
+}
+
+function parseRE(src) {
+  const chars = Array.from(src.replace(/\s+/g, ''));
+  let i = 0;
+  const peek = () => chars[i];
+  function alt() { const items = [cat()]; while (peek() === '|') { i++; items.push(cat()); } return items.length === 1 ? items[0] : { t: 'alt', items }; }
+  function cat() {
+    const items = [];
+    while (i < chars.length && peek() !== '|' && peek() !== ')') items.push(rep());
+    if (!items.length) return { t: 'eps' };
+    return items.length === 1 ? items[0] : { t: 'cat', items };
+  }
+  function rep() {
+    let x = atom();
+    while (peek() === '*' || peek() === '+' || peek() === '?') {
+      const o = chars[i++];
+      if (o === '*') x = { t: 'star', x };
+      else if (o === '+') x = { t: 'cat', items: [x, { t: 'star', x }] };
+      else x = { t: 'alt', items: [x, { t: 'eps' }] };
+    }
+    return x;
+  }
+  function atom() {
+    const c = chars[i];
+    if (c === '(') { i++; const x = alt(); if (peek() !== ')') throw new Error('Missing a closing “)”'); i++; return x; }
+    if (c === '*' || c === '+' || c === '?') throw new Error(`Nothing to repeat before “${c}”`);
+    if (c === '\\') { i++; if (i >= chars.length) throw new Error('A “\\” must be followed by a symbol'); return { t: 'sym', c: chars[i++] }; }
+    if (c === 'ε' || c === '@') { i++; return { t: 'eps' }; }
+    if (c === '∅' || c === '#') { i++; return { t: 'empty' }; }
+    i++; return { t: 'sym', c };
+  }
+  const ast = alt();
+  if (i < chars.length) throw new Error('Unmatched “)”');
+  return ast;
+}
+
+function thompson(ast, extra = []) {
+  const A = newAuto('ENFA'); let n = 0; const syms = new Set();
+  const fresh = () => { const s = 'q' + n++; A.states.push(s); return s; };
+  function build(node) {
+    switch (node.t) {
+      case 'sym': { const s = fresh(), e = fresh(); addT(A, s, node.c, e); syms.add(node.c); return [s, e]; }
+      case 'eps': { const s = fresh(), e = fresh(); addT(A, s, EPS, e); return [s, e]; }
+      case 'empty': { const s = fresh(), e = fresh(); return [s, e]; }
+      case 'cat': {
+        let [s, e] = build(node.items[0]);
+        for (const it of node.items.slice(1)) { const [s2, e2] = build(it); addT(A, e, EPS, s2); e = e2; }
+        return [s, e];
+      }
+      case 'alt': {
+        const s = fresh(); const parts = node.items.map(build); const e = fresh();
+        for (const [a, b] of parts) { addT(A, s, EPS, a); addT(A, b, EPS, e); }
+        return [s, e];
+      }
+      case 'star': {
+        const s = fresh(); const [a, b] = build(node.x); const e = fresh();
+        addT(A, s, EPS, a); addT(A, s, EPS, e); addT(A, b, EPS, a); addT(A, b, EPS, e);
+        return [s, e];
+      }
+    }
+  }
+  const [s, e] = build(ast);
+  A.start = s; A.accept = [e];
+  A.alphabet = [...new Set([...syms].sort().concat(extra))];
+  return A;
+}
+
+function faToRegex(A) {
+  if (A.start == null || !A.states.includes(A.start)) return EMPTYN;
+  const fwd = new Set([A.start]), fq = [A.start];
+  const rev = {};
+  for (const q of A.states) for (const s in (A.delta[q] || {})) for (const t of A.delta[q][s]) (rev[t] ||= new Set()).add(q);
+  for (let i = 0; i < fq.length; i++) for (const s in (A.delta[fq[i]] || {})) for (const t of A.delta[fq[i]][s]) if (!fwd.has(t)) { fwd.add(t); fq.push(t); }
+  const back = new Set(A.accept), bq = [...A.accept];
+  for (let i = 0; i < bq.length; i++) for (const p of (rev[bq[i]] || [])) if (!back.has(p)) { back.add(p); bq.push(p); }
+  const st = A.states.filter(q => fwd.has(q) && back.has(q));
+  if (!st.includes(A.start)) return EMPTYN;
+  const idx = new Map(st.map((q, i) => [q, i]));
+  const S = -1, TT = -2, R = new Map(), key = (i, j) => i + ',' + j;
+  const add = (i, j, n) => { const k = key(i, j); R.set(k, R.has(k) ? mkAlt(R.get(k), n) : n); };
+  add(S, idx.get(A.start), EPSN);
+  for (const q of st) {
+    if (A.accept.includes(q)) add(idx.get(q), TT, EPSN);
+    const d = A.delta[q] || {};
+    for (const sym in d) for (const t of d[sym]) if (idx.has(t)) add(idx.get(q), idx.get(t), sym === EPS ? EPSN : { t: 'sym', c: sym });
+  }
+  let alive = [S, ...st.map((_, i) => i), TT];
+  const remaining = st.map((_, i) => i);
+  while (remaining.length) {
+    let best = null, bs = Infinity;
+    for (const k of remaining) {
+      let ins = 0, outs = 0;
+      for (const x of alive) { if (x === k) continue; if (R.has(key(x, k))) ins++; if (R.has(key(k, x))) outs++; }
+      if (ins * outs < bs) { bs = ins * outs; best = k; }
+    }
+    const k = best;
+    const loop = R.has(key(k, k)) ? mkStar(R.get(key(k, k))) : EPSN;
+    const ins = alive.filter(x => x !== k && R.has(key(x, k))), outs = alive.filter(x => x !== k && R.has(key(k, x)));
+    for (const i of ins) for (const j of outs) add(i, j, mkCat(mkCat(R.get(key(i, k)), loop), R.get(key(k, j))));
+    alive = alive.filter(x => x !== k);
+    remaining.splice(remaining.indexOf(k), 1);
+    for (const x of alive) { R.delete(key(x, k)); R.delete(key(k, x)); }
+    R.delete(key(k, k));
+  }
+  return R.get(key(S, TT)) || EMPTYN;
+}
+
+const rad = q => Math.min(58, Math.max(22, 9 + Array.from(q).length * 4.4));
+function autoLayout(A, fit = null) {
+  const rmax = Math.max(22, ...A.states.map(rad));
+  const GX = Math.max(120, 2 * rmax + 74), GY = Math.max(92, 2 * rmax + 46);
+  const layer = new Map();
+  const nbrs = q => { const o = [], d = A.delta[q] || {}; for (const k in d) for (const t of d[k]) if (A.states.includes(t) && !o.includes(t)) o.push(t); return o; };
+  const maxLayer = () => Math.max(-1, ...layer.values());
+  const bfs = (root, base) => {
+    layer.set(root, base);
+    const qu = [root];
+    for (let i = 0; i < qu.length; i++) for (const t of nbrs(qu[i])) if (!layer.has(t)) { layer.set(t, layer.get(qu[i]) + 1); qu.push(t); }
+  };
+  if (A.start != null && A.states.includes(A.start)) bfs(A.start, 0);
+  for (const q of A.states) if (!layer.has(q)) bfs(q, maxLayer() + 1);
+  const cols = [];
+  A.states.forEach(q => { (cols[layer.get(q)] ||= []).push(q); });
+  const raw = {};
+  cols.forEach((c, li) => { if (c) c.forEach((q, i) => { raw[q] = { x: li * GX, y: (i - (c.length - 1) / 2) * GY }; }); });
+  const qs = A.states; A.pos = {};
+  if (!qs.length) return;
+  const xs = qs.map(q => raw[q].x), ys = qs.map(q => raw[q].y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+  if (fit) {
+    const w = maxX - minX, h = maxY - minY;
+    const sx = w > 0 ? Math.min(fit.w / w, 1.9) : 1, sy = h > 0 ? Math.min(fit.h / h, 1.5) : 1;
+    for (const q of qs) A.pos[q] = { x: fit.padL + (raw[q].x - minX) * sx, y: fit.H / 2 + 14 + (raw[q].y - (minY + maxY) / 2) * sy };
+  } else {
+    for (const q of qs) A.pos[q] = { x: 70 + raw[q].x - minX, y: 60 + raw[q].y - minY };
+  }
+}
+// #CORE-END
+
+/* ================= UI ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+function h(tag, props = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') e.className = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (['value', 'checked', 'disabled'].includes(k)) e[k] = v;
+    else e.setAttribute(k, v === true ? '' : v);
+  }
+  for (const k of kids.flat(Infinity)) if (k != null && k !== false) e.append(k.nodeType ? k : document.createTextNode(k));
+  return e;
+}
+const NS = 'http://www.w3.org/2000/svg';
+function sv(tag, attrs = {}, ...kids) {
+  const e = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  for (const k of kids) if (k != null) e.append(k.nodeType ? k : document.createTextNode(k));
+  return e;
+}
+let toastT;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2800);
+}
+const fmtSet = a => a.length ? '{' + a.join(', ') + '}' : '∅';
+const show = s => s === '' ? 'ε' : s;
+
+/* ---------- drawing ---------- */
+let uid = 0;
+function drawGraph(svg, A, { highlight = null, fixedView = null } = {}) {
+  svg.textContent = '';
+  const id = 'arr' + (uid++);
+  for (const q of A.states) if (!A.pos[q]) A.pos[q] = { x: 80, y: 80 };
+  const pos = A.pos;
+  let vb;
+  if (fixedView) vb = fixedView;
+  else if (!A.states.length) vb = [0, 0, 300, 90];
+  else {
+    const xs = A.states.map(q => pos[q].x), ys = A.states.map(q => pos[q].y);
+    const rmax = Math.max(...A.states.map(rad));
+    const x0 = Math.min(...xs) - rmax - 52, x1 = Math.max(...xs) + rmax + 26;
+    const y0 = Math.min(...ys) - rmax - 60, y1 = Math.max(...ys) + rmax + 42;
+    vb = [x0, y0, x1 - x0, y1 - y0];
+  }
+  svg.setAttribute('viewBox', vb.join(' '));
+  if (!fixedView) {
+    svg.style.width = vb[2] + 'px'; svg.style.maxWidth = vb[2] > 860 ? 'none' : '100%';
+    svg.style.height = 'auto'; svg.style.aspectRatio = vb[2] + '/' + vb[3];
+  }
+  svg.append(sv('defs', {}, sv('marker', { id, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7.5, markerHeight: 7.5, orient: 'auto' }, sv('path', { d: 'M0,0.5 L10,5 L0,9.5 z', class: 'arr' }))));
+  if (!A.states.length) { svg.append(sv('text', { x: vb[2] / 2, y: vb[3] / 2, 'text-anchor': 'middle', fill: 'currentColor' }, 'No states yet')); return; }
+  const gE = sv('g'), gN = sv('g');
+  svg.append(gE, gN);
+  // edges
+  const edges = new Map();
+  for (const q of A.states) {
+    const d = A.delta[q] || {};
+    for (const sym of Object.keys(d)) for (const t of d[sym]) {
+      if (!pos[t]) continue;
+      const k = q + '\u0001' + t;
+      if (!edges.has(k)) edges.set(k, { from: q, to: t, syms: [] });
+      edges.get(k).syms.push(sym);
+    }
+  }
+  const ord = s => s === EPS ? 999 : A.alphabet.indexOf(s);
+  for (const e of edges.values()) {
+    const label = e.syms.sort((a, b) => ord(a) - ord(b)).join(',');
+    const p1 = pos[e.from], p2 = pos[e.to], r1 = rad(e.from), r2 = rad(e.to);
+    let d, lx, ly;
+    if (e.from === e.to) {
+      const r = r1;
+      d = `M${p1.x - r * .6},${p1.y - r * .8} C${p1.x - r * 1.3},${p1.y - r * 2.7} ${p1.x + r * 1.3},${p1.y - r * 2.7} ${p1.x + r * .6},${p1.y - r * .8}`;
+      lx = p1.x; ly = p1.y - r * 2.15 - 8;
+    } else {
+      const dx = p2.x - p1.x, dy = p2.y - p1.y, dist = Math.hypot(dx, dy) || 1;
+      const nx = -dy / dist, ny = dx / dist;
+      const rev = edges.has(e.to + '\u0001' + e.from);
+      const hh = rev ? 46 : 0;
+      const c = { x: (p1.x + p2.x) / 2 + nx * hh, y: (p1.y + p2.y) / 2 + ny * hh };
+      const u1 = norm(c.x - p1.x, c.y - p1.y), u2 = norm(p2.x - c.x, p2.y - c.y);
+      const s0 = { x: p1.x + u1.x * r1, y: p1.y + u1.y * r1 }, e0 = { x: p2.x - u2.x * (r2 + 2), y: p2.y - u2.y * (r2 + 2) };
+      d = `M${s0.x},${s0.y} Q${c.x},${c.y} ${e0.x},${e0.y}`;
+      const mx = .25 * s0.x + .5 * c.x + .25 * e0.x, my = .25 * s0.y + .5 * c.y + .25 * e0.y;
+      const side = rev ? 1 : (ny > 0 ? -1 : 1);
+      lx = mx + nx * side * 13; ly = my + ny * side * 13;
+    }
+    gE.append(sv('path', { d, class: 'edge', 'marker-end': `url(#${id})` }));
+    gE.append(sv('text', { x: lx, y: ly, class: 'elabel', 'text-anchor': 'middle', dy: '.35em' }, label));
+  }
+  // start arrow
+  if (A.start != null && pos[A.start]) {
+    const p = pos[A.start], r = rad(A.start);
+    gE.append(sv('path', { d: `M${p.x - r - 38},${p.y} L${p.x - r - 2},${p.y}`, class: 'edge', 'stroke-width': 2, 'marker-end': `url(#${id})` }));
+  }
+  for (const q of A.states) {
+    const p = pos[q], r = rad(q), on = highlight && highlight.has(q);
+    const g = sv('g', { class: 'node' + (on ? ' on' : ''), 'data-q': q, transform: `translate(${p.x},${p.y})` });
+    g.append(sv('circle', { r }));
+    if (A.accept.includes(q)) g.append(sv('circle', { r: r - 5.5, class: 'inner' }));
+    const n = Array.from(q).length;
+    g.append(sv('text', { class: 'nl', dy: '.35em', style: `font-size:${n > 9 ? 11 : n > 5 ? 12 : 14}px` }, q));
+    gN.append(g);
+  }
+}
+function norm(x, y) { const d = Math.hypot(x, y) || 1; return { x: x / d, y: y / d }; }
+
+/* ---------- model ---------- */
+const STORE = 'automata-workbench:v2';
+const EW = 760, EH = 400;
+const layoutEditor = A => autoLayout(A, { w: EW - 190, h: EH - 150, padL: 90, H: EH });
+const EXAMPLES = [
+  { s: 'aabbcc', b: 'ε\nabc\nba\ncab\naac', name: 'ε-NFA · a*b*c*', mode: 'ENFA', alpha: 'abc', states: ['A', 'B', 'C'], start: 'A', accept: ['C'], t: [['A', 'a', 'A'], ['A', EPS, 'B'], ['B', 'b', 'B'], ['B', EPS, 'C'], ['C', 'c', 'C']] },
+  { s: '1101', b: '01\n101\n10\nε\n0001', name: 'NFA · ends in 01', mode: 'NFA', alpha: '01', states: ['q0', 'q1', 'q2'], start: 'q0', accept: ['q2'], t: [['q0', '0', 'q0'], ['q0', '1', 'q0'], ['q0', '0', 'q1'], ['q1', '1', 'q2']] },
+  { s: '0100', b: '100\n0100\n011\n1111\n10', name: 'NFA · third symbol from the end is 1', mode: 'NFA', alpha: '01', states: ['q0', 'q1', 'q2', 'q3'], start: 'q0', accept: ['q3'], t: [['q0', '0', 'q0'], ['q0', '1', 'q0'], ['q0', '1', 'q1'], ['q1', '0', 'q2'], ['q1', '1', 'q2'], ['q2', '0', 'q3'], ['q2', '1', 'q3']] },
+  { s: '1001', b: 'ε\n0\n1\n11\n0110\n111', name: 'DFA · even number of 1s', mode: 'DFA', alpha: '01', states: ['even', 'odd'], start: 'even', accept: ['even'], t: [['even', '0', 'even'], ['even', '1', 'odd'], ['odd', '0', 'odd'], ['odd', '1', 'even']] },
+  { s: '110', b: 'ε\n11\n110\n1001\n101', name: 'DFA · binary numbers divisible by 3', mode: 'DFA', alpha: '01', states: ['r0', 'r1', 'r2'], start: 'r0', accept: ['r0'], t: [['r0', '0', 'r0'], ['r0', '1', 'r1'], ['r1', '0', 'r2'], ['r1', '1', 'r0'], ['r2', '0', 'r1'], ['r2', '1', 'r2']] },
+  { s: '-42', b: '7\n+15\n-\n+-3\n007', name: 'ε-NFA · optional sign, then digits', mode: 'ENFA', alpha: '+-0123456789', states: ['s0', 's1', 's2'], start: 's0', accept: ['s2'], t: [['s0', '+', 's1'], ['s0', '-', 's1'], ['s0', EPS, 's1'], ...'0123456789'.split('').flatMap(d => [['s1', d, 's2'], ['s2', d, 's2']])] },
+];
+function fromExample(e) {
+  const A = newAuto(e.mode);
+  A.alphabet = [...new Set(Array.from(e.alpha))]; A.states = [...e.states]; A.start = e.start; A.accept = [...e.accept];
+  for (const [f, s, t] of e.t) addT(A, f, s, t);
+  layoutEditor(A); return A;
+}
+let M;
+function loadSaved() {
+  try {
+    const o = JSON.parse(localStorage.getItem(STORE));
+    if (o && Array.isArray(o.states) && Array.isArray(o.alphabet) && Array.isArray(o.accept) && o.delta && o.pos && ['DFA', 'NFA', 'ENFA'].includes(o.mode)) return o;
+  } catch (e) { }
+  return null;
+}
+function persist() { try { localStorage.setItem(STORE, JSON.stringify(M)); } catch (e) { } }
+
+function validate(A) {
+  const out = [];
+  for (const q of A.states) {
+    if (A.mode !== 'ENFA' && T(A, q, EPS).length) out.push({ q, sym: EPS, msg: `A ${MODE_NAME[A.mode]} can’t have ε-transitions (see ${q})` });
+    if (A.mode === 'DFA') for (const a of A.alphabet) { const n = T(A, q, a).length; if (n > 1) out.push({ q, sym: a, msg: `δ(${q}, ${a}) has ${n} targets` }); }
+  }
+  return out;
+}
+
+/* ---------- editor state ---------- */
+let hl = null, renderedEps = null;
+const showEpsCol = () => M.mode === 'ENFA' || hasEps(M);
+function drawEditor() { drawGraph($('#editorSvg'), M, { fixedView: [0, 0, EW, EH], highlight: hl }); }
+function structure() { renderTable(); values(); }
+function values() {
+  if (renderedEps !== showEpsCol()) renderTable();
+  syncTable();
+  if (document.activeElement !== $('#alpha')) $('#alpha').value = M.alphabet.join(',');
+  $$('#modeSeg button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.mode === M.mode)));
+  renderStatus(); drawEditor(); updateTests(); persist();
+}
+function renderStatus() {
+  const host = $('#status'); host.textContent = '';
+  const issues = validate(M), c = classify(M);
+  if (issues.length) {
+    host.append(h('span', { class: 'pill bad' }, `Not a valid ${MODE_NAME[M.mode]}`), ' ', h('span', { class: 'small muted' }, issues[0].msg + (issues.length > 1 ? ` (and ${issues.length - 1} more)` : '')));
+    return;
+  }
+  const bits = [h('span', { class: 'pill ok' }, `Valid ${MODE_NAME[M.mode]}`)];
+  if (M.start == null) bits.push(' ', h('span', { class: 'pill warn' }, 'Choose a start state'));
+  else if (c.cls === 'DFA' && M.states.length) {
+    bits.push(' ', h('span', { class: 'small muted' }, c.missing ? `Deterministic, but ${c.missing} transition${c.missing > 1 ? 's are' : ' is'} missing. Missing ones lead to an implicit dead state.` : 'Deterministic and complete.'));
+  } else if (c.cls === 'NFA' && M.mode === 'ENFA') bits.push(' ', h('span', { class: 'small muted' }, 'No ε-moves, so this is also an NFA.'));
+  host.append(...bits);
+}
+function renderTable() {
+  renderedEps = showEpsCol();
+  const cols = [...M.alphabet, ...(renderedEps ? [EPS] : [])];
+  const host = $('#ttHost'); host.textContent = '';
+  if (!M.states.length) { host.append(h('p', { class: 'muted' }, 'No states yet. Add one, or double-click the canvas.')); return; }
+  const thead = h('thead', {}, h('tr', {}, h('th', { title: 'Start state' }, '▶'), h('th', { title: 'Accepting state' }, '✓'), h('th', {}, 'state'), ...cols.map(c => h('th', { class: 'sym' }, c)), h('th', {})));
+  const tbody = h('tbody');
+  M.states.forEach((q, i) => {
+    tbody.append(h('tr', {},
+      h('td', {}, h('input', { type: 'radio', name: 'start', class: 'r-start', 'aria-label': 'Start state: ' + q, onchange: () => { M.start = M.states[i]; values(); } })),
+      h('td', {}, h('input', { type: 'checkbox', class: 'c-acc', 'aria-label': 'Accepting: ' + q, onchange: e => { const s = M.states[i]; M.accept = e.target.checked ? [...M.accept, s] : M.accept.filter(x => x !== s); values(); } })),
+      h('td', {}, h('input', { type: 'text', class: 'nm', spellcheck: 'false', 'aria-label': 'State name', onchange: e => renameState(i, e.target.value) })),
+      ...cols.map(c => h('td', {}, h('input', { type: 'text', class: 'cell', 'data-c': c, placeholder: '—', spellcheck: 'false', 'aria-label': `δ(${q}, ${c})`, onchange: e => setCell(i, c, e.target.value) }))),
+      h('td', {}, h('button', { class: 'del', title: 'Delete state', 'aria-label': 'Delete ' + q, onclick: () => delState(i) }, '×'))
+    ));
+  });
+  host.append(h('table', { class: 'tt' }, thead, tbody));
+}
+function syncTable() {
+  const bad = new Set(validate(M).map(x => x.q + '\u0001' + x.sym));
+  $$('#ttHost tbody tr').forEach((tr, i) => {
+    const q = M.states[i]; if (q === undefined) return;
+    tr.querySelector('.r-start').checked = M.start === q;
+    tr.querySelector('.c-acc').checked = M.accept.includes(q);
+    const nm = tr.querySelector('.nm'); if (nm.value !== q) nm.value = q;
+    tr.querySelectorAll('.cell').forEach(inp => {
+      const s = inp.dataset.c;
+      inp.value = T(M, q, s).join(',');
+      inp.classList.toggle('bad', bad.has(q + '\u0001' + s));
+    });
+  });
+}
+function nextName() { let n = M.states.length; while (M.states.includes('q' + n)) n++; return 'q' + n; }
+function addState(x, y) {
+  const q = nextName(), n = M.states.length;
+  M.states.push(q);
+  M.pos[q] = { x: x ?? 110 + (n % 4) * 150, y: y ?? 120 + Math.floor(n / 4) * 110 + (n % 2) * 40 };
+  if (M.start == null) M.start = q;
+  structure();
+}
+function delState(i) {
+  const q = M.states[i];
+  M.states.splice(i, 1); delete M.delta[q]; delete M.pos[q];
+  for (const p in M.delta) for (const s in M.delta[p]) { M.delta[p][s] = M.delta[p][s].filter(t => t !== q); if (!M.delta[p][s].length) delete M.delta[p][s]; }
+  M.accept = M.accept.filter(x => x !== q);
+  if (M.start === q) M.start = M.states[0] ?? null;
+  structure();
+}
+function renameState(i, raw) {
+  const old = M.states[i], name = raw.trim();
+  if (name === old) return;
+  if (!name || /[\s,;{}]/.test(name)) { toast('State names can’t be empty or contain spaces, commas or braces'); syncTable(); return; }
+  if (M.states.includes(name)) { toast(`There is already a state named “${name}”`); syncTable(); return; }
+  M.states[i] = name;
+  M.delta[name] = M.delta[old]; delete M.delta[old];
+  for (const p in M.delta) for (const s in M.delta[p]) M.delta[p][s] = M.delta[p][s].map(t => t === old ? name : t);
+  M.accept = M.accept.map(x => x === old ? name : x);
+  if (M.start === old) M.start = name;
+  M.pos[name] = M.pos[old]; delete M.pos[old];
+  values();
+}
+function setCell(i, sym, text) {
+  const q = M.states[i], unknown = [], tg = [];
+  for (const t of text.split(/[\s,;{}]+/).filter(x => x && !['∅', '-', '—'].includes(x))) {
+    if (!M.states.includes(t)) unknown.push(t); else if (!tg.includes(t)) tg.push(t);
+  }
+  if (unknown.length) toast('No state named ' + unknown.map(u => `“${u}”`).join(', '));
+  const m = orderMap(M); tg.sort((a, b) => m.get(a) - m.get(b));
+  setT(M, q, sym, tg); values();
+}
+
+/* ---------- editor wiring ---------- */
+$$('#modeSeg button').forEach(b => b.addEventListener('click', () => { M.mode = b.dataset.mode; structure(); }));
+$('#alpha').addEventListener('change', e => {
+  const syms = [...new Set(Array.from(e.target.value.replace(/[\s,;]+/g, '')).filter(c => c !== EPS))];
+  const removed = M.alphabet.filter(a => !syms.includes(a));
+  if (removed.some(a => M.states.some(q => T(M, q, a).length))) toast('Transitions on removed symbols were deleted');
+  M.alphabet = syms;
+  for (const q of M.states) for (const a of removed) setT(M, q, a, []);
+  structure();
+});
+$('#btnAdd').addEventListener('click', () => addState());
+$('#btnLayout').addEventListener('click', () => { layoutEditor(M); values(); });
+$('#btnClear').addEventListener('click', () => { M.states = []; M.start = null; M.accept = []; M.delta = {}; M.pos = {}; structure(); });
+const exSel = $('#exSel');
+exSel.append(h('option', { value: '' }, 'Load an example…'), ...EXAMPLES.map((e, i) => h('option', { value: i }, e.name)));
+exSel.addEventListener('change', () => {
+  if (exSel.value === '') return;
+  const ex = EXAMPLES[+exSel.value];
+  M = fromExample(ex); exSel.value = ''; $('#tstr').value = ex.s; $('#batch').value = ex.b; structure();
+});
+(function dragSetup() {
+  const svg = $('#editorSvg'); let drag = null;
+  const pt = e => { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); };
+  svg.addEventListener('pointerdown', e => {
+    const g = e.target.closest('.node'); if (!g) return;
+    const q = g.dataset.q, p = pt(e), c = M.pos[q];
+    drag = { q, dx: c.x - p.x, dy: c.y - p.y };
+    svg.setPointerCapture(e.pointerId); e.preventDefault();
+  });
+  svg.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const p = pt(e);
+    M.pos[drag.q] = { x: Math.max(24, Math.min(EW - 24, p.x + drag.dx)), y: Math.max(24, Math.min(EH - 24, p.y + drag.dy)) };
+    drawEditor();
+  });
+  const end = () => { if (drag) { drag = null; persist(); } };
+  svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
+  svg.addEventListener('dblclick', e => { if (e.target.closest('.node')) return; const p = pt(e); addState(p.x, p.y); });
+})();
+
+/* ---------- tests ---------- */
+let sim = null, stepSel = 0, timer = null;
+function updateTests() { runSingle(); runBatch(); runExplore(); }
+function readStr(raw) { raw = raw.trim(); return raw === 'ε' ? '' : raw; }
+function runSingle() {
+  clearInterval(timer);
+  const out = $('#simOut');
+  if (M.start == null || !M.states.length) { out.textContent = ''; out.append(h('p', { class: 'muted small' }, 'Add a state and choose a start state to test strings.')); hl = null; sim = null; drawEditor(); return; }
+  sim = simulate(M, readStr($('#tstr').value));
+  stepSel = sim.steps.length - 1;
+  paintSim();
+}
+function paintSim() {
+  const out = $('#simOut'); out.textContent = '';
+  const s = sim;
+  if (s.error) {
+    out.append(h('span', { class: 'verdict err' }, 'Can’t read this string'), h('p', { class: 'small muted', style: 'margin:0' }, `${s.error}. Σ = {${M.alphabet.join(', ')}}`));
+    hl = null; drawEditor(); return;
+  }
+  out.append(h('span', { class: 'verdict ' + (s.accepted ? 'ok' : 'bad') }, s.accepted ? 'Accepted' : 'Rejected'));
+  const chips = h('div', { class: 'chips' });
+  s.steps.forEach((st, i) => chips.append(h('button', { class: 'chip', 'aria-pressed': String(i === stepSel), onclick: () => { stepSel = i; paintSim(); } }, h('small', {}, i === 0 ? 'start' : 'read ' + st.sym), fmtSet(st.set))));
+  out.append(chips, h('p', { class: 'small muted', style: 'margin:4px 0 0' }, 'Select a step to light up its states in the diagram.'));
+  hl = new Set(s.steps[stepSel].set); drawEditor();
+}
+$('#tstr').addEventListener('input', runSingle);
+$('#btnAnim').addEventListener('click', () => {
+  if (!sim || sim.error) return;
+  clearInterval(timer); stepSel = 0; paintSim();
+  timer = setInterval(() => { if (stepSel >= sim.steps.length - 1) { clearInterval(timer); return; } stepSel++; paintSim(); }, 650);
+});
+function runBatch() {
+  const out = $('#batchOut'); out.textContent = '';
+  const lines = $('#batch').value.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 400);
+  if (!lines.length) return;
+  if (M.start == null) { out.append(h('p', { class: 'muted small' }, 'Choose a start state first.')); return; }
+  let a = 0; const ul = h('ul', { class: 'res' });
+  for (const l of lines) {
+    const r = simulate(M, readStr(l));
+    if (r.accepted) a++;
+    ul.append(h('li', { class: r.accepted ? 'ok' : 'bad' }, l, h('b', {}, r.error ? 'not in Σ' : r.accepted ? 'accepted' : 'rejected')));
+  }
+  out.append(h('p', { class: 'small muted', style: 'margin:8px 0 0' }, `${a} accepted, ${lines.length - a} rejected`), ul);
+}
+$('#batch').addEventListener('input', runBatch);
+function runExplore() {
+  const L = +$('#maxlen').value; $('#maxlenV').textContent = L;
+  const out = $('#expOut'); out.textContent = '';
+  if (M.start == null || !M.states.length) { out.append(h('p', { class: 'muted small' }, 'Choose a start state to explore the language.')); return; }
+  if (!M.alphabet.length) { out.append(h('p', { class: 'muted small' }, 'Give the automaton an alphabet first.')); return; }
+  const r = enumerate(M, L);
+  const total = r.counts.reduce((x, y) => x + y, 0);
+  if (!total) out.append(h('p', { style: 'margin:4px 0' }, `No string of length ${r.done} or less is accepted.`));
+  else {
+    out.append(h('p', { class: 'small', style: 'margin:4px 0' }, `Shortest accepted string: `, h('code', {}, show(r.acc[0]))));
+    const chips = h('div', { class: 'chips' }, r.acc.map(s => h('span', { class: 'chip' }, show(s))));
+    if (total > r.acc.length) chips.append(h('span', { class: 'small muted', style: 'align-self:center' }, `and ${total - r.acc.length} more`));
+    out.append(chips);
+  }
+  const tb = h('table', { class: 'counts' }, h('thead', {}, h('tr', {}, h('th', {}, 'length'), h('th', {}, 'accepted'), h('th', {}, 'all strings'))),
+    h('tbody', {}, r.counts.map((c, i) => h('tr', {}, h('td', {}, i), h('td', {}, c), h('td', {}, r.totals[i])))));
+  out.append(h('details', {}, h('summary', {}, 'Counts by length'), tb));
+  if (r.truncated) out.append(h('p', { class: 'small muted' }, `Stopped at length ${r.done}: more strings than can be listed quickly.`));
+}
+$('#maxlen').addEventListener('input', runExplore);
+
+/* ---------- static tables & cards ---------- */
+function transTable(A, members) {
+  const cols = [...A.alphabet, ...(hasEps(A) ? [EPS] : [])];
+  const head = h('tr', {}, h('th', {}), h('th', {}, 'state'), members ? h('th', {}, 'NFA states') : null, ...cols.map(c => h('th', {}, c)));
+  const rows = A.states.map(q => h('tr', {},
+    h('td', { class: 'mk' }, (q === A.start ? '→' : '') + (A.accept.includes(q) ? '*' : '')),
+    h('td', { class: 'q' }, q),
+    members ? h('td', {}, fmtSet(members[q] || [])) : null,
+    ...cols.map(c => { const t = T(A, q, c); return h('td', {}, t.length === 0 ? '∅' : t.length === 1 ? t[0] : '{' + t.join(', ') + '}'); })));
+  return h('table', { class: 'st' }, h('thead', {}, head), h('tbody', {}, rows));
+}
+function verifyBadge(a, b) {
+  const r = equivalent(a, b);
+  if (r.ok === true) return h('span', { class: 'pill ok' }, 'Same language as the source (checked exactly)');
+  if (r.ok === false) return h('span', { class: 'pill bad' }, `Differs from the source on “${show(r.witness)}”`);
+  return h('span', { class: 'pill info' }, 'Too large to verify fully');
+}
+function loadAuto(A, quiet) {
+  M = clone(A); layoutEditor(M); structure();
+  if (!quiet) { showTab('editor'); toast('Loaded into the editor'); }
+}
+function autoCard({ title, desc, A, members, extra = [], badge, actions = [], noLoad }) {
+  autoLayout(A);
+  const svg = sv('svg', { class: 'graph static', role: 'img', 'aria-label': title + ' diagram' });
+  drawGraph(svg, A);
+  const acts = h('div', { class: 'acts' }, noLoad ? null : h('button', { class: 'btn sm', onclick: () => loadAuto(A) }, 'Load into editor'), ...actions);
+  return h('article', { class: 'card rcard' },
+    h('div', { class: 'head' }, h('h3', {}, title, ' ', h('span', { class: 'small muted', style: 'font:400 13px var(--body)' }, `${A.states.length} state${A.states.length === 1 ? '' : 's'}`)), badge || null),
+    desc ? h('p', { class: 'desc' }, desc) : null,
+    h('div', { class: 'gwrap' }, svg),
+    h('details', { open: true }, h('summary', {}, 'Transition table'), h('div', { class: 'tablewrap' }, transTable(A, members))),
+    extra, acts);
+}
+
+/* ---------- convert ---------- */
+function sourceCopy() {
+  if (M.start == null || !M.states.includes(M.start)) { toast('Choose a start state in the editor first'); return null; }
+  return clone(M);
+}
+function runConvert(kind) {
+  const S = sourceCopy(); if (!S) return;
+  const out = $('#convOut'); out.textContent = '';
+  out.append(autoCard({ title: 'Source: ' + MODE_NAME[classify(S).cls], A: clone(S), noLoad: true }));
+  let cur = S;
+  if (kind === 'en' || kind === 'all') {
+    const r = removeEps(cur);
+    const had = hasEps(cur);
+    const clTbl = h('details', {}, h('summary', {}, 'ε-closures'),
+      h('div', { class: 'tablewrap' }, h('table', { class: 'st' }, h('thead', {}, h('tr', {}, h('th', {}, 'state'), h('th', {}, 'ε-closure'))),
+        h('tbody', {}, cur.states.map(q => h('tr', {}, h('td', { class: 'q' }, q), h('td', {}, fmtSet(r.closures[q]))))))));
+    let desc = had
+      ? 'For each state q and symbol a, the new move is the ε-closure of everything reachable by a from the ε-closure of q. A state accepts if its ε-closure contains an accepting state.'
+      : 'This automaton has no ε-transitions, so the NFA is the same machine.';
+    if (r.dropped.length) desc += ` Unreachable after this step and removed: ${r.dropped.join(', ')}.`;
+    out.append(autoCard({ title: 'NFA without ε-moves', desc, A: r.auto, extra: [clTbl], badge: verifyBadge(S, r.auto) }));
+    cur = r.auto;
+  }
+  if (kind === 'nd' || kind === 'all') {
+    const r = subsetConstruct(cur, { compact: $('#optCompact').checked, dead: $('#optDead').checked });
+    out.append(autoCard({
+      title: 'DFA by subset construction',
+      desc: 'Each DFA state stands for a set of NFA states, starting from the ε-closure of the start state. New sets are added as they are discovered, so only reachable ones appear.',
+      A: r.auto, members: r.members, badge: verifyBadge(S, r.auto)
+    }));
+  }
+  out.lastElementChild.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+$('#cvEN').addEventListener('click', () => runConvert('en'));
+$('#cvND').addEventListener('click', () => runConvert('nd'));
+$('#cvAll').addEventListener('click', () => runConvert('all'));
+
+/* ---------- regex ---------- */
+const reIn = $('#reIn');
+$('#reKeys').append(...['ε', '∅', '|', '*', '+', '?', '(', ')'].map(k => h('button', {
+  type: 'button', title: 'Insert ' + k, onclick: () => {
+    const a = reIn.selectionStart ?? reIn.value.length, b = reIn.selectionEnd ?? a;
+    reIn.value = reIn.value.slice(0, a) + k + reIn.value.slice(b); reIn.focus(); reIn.setSelectionRange(a + k.length, a + k.length);
+  }
+}, k)));
+function reBuild() {
+  const err = $('#reErr'); err.textContent = '';
+  let ast;
+  try { ast = parseRE(reIn.value); } catch (e) { err.textContent = e.message; return; }
+  const extra = Array.from($('#reAlpha').value.replace(/[\s,;]+/g, '')).filter(c => c !== EPS);
+  const A = thompson(ast, extra);
+  const out = $('#reCards'); out.textContent = '';
+  out.append(autoCard({
+    title: 'Thompson ε-NFA', A,
+    desc: `Read as ${printRE(ast)}. Each symbol gets a two-state piece; union, concatenation and star join the pieces with ε-transitions.`,
+    actions: [h('button', { class: 'btn sm accent', onclick: () => { loadAuto(A, true); showTab('convert'); runConvert('all'); } }, 'Convert to NFA and DFA')]
+  }));
+}
+$('#reBuild').addEventListener('click', reBuild);
+reIn.addEventListener('keydown', e => { if (e.key === 'Enter') reBuild(); });
+$('#reFrom').addEventListener('click', () => {
+  const out = $('#reOut'); out.textContent = '';
+  if (M.start == null || !M.states.length) { toast('Choose a start state in the editor first'); return; }
+  const txt = printRE(faToRegex(M));
+  let badge;
+  try {
+    const r = equivalent(M, thompson(parseRE(txt)));
+    badge = r.ok === true ? h('span', { class: 'pill ok' }, 'Matches the automaton (checked exactly)') : r.ok === false ? h('span', { class: 'pill bad' }, `Differs on “${show(r.witness)}”`) : h('span', { class: 'pill info' }, 'Too large to verify');
+  } catch (e) { badge = h('span', { class: 'pill info' }, 'Could not verify'); }
+  out.append(h('div', { class: 'reout' }, txt), badge);
+  if (txt === '∅') out.append(h('p', { class: 'small muted' }, 'The language is empty: no accepting state can be reached.'));
+  out.append(
+    h('div', { class: 'acts' },
+      h('button', { class: 'btn sm', onclick: () => { navigator.clipboard.writeText(txt).then(() => toast('Copied'), () => toast('Select the text and copy it manually')); } }, 'Copy'),
+      h('button', { class: 'btn sm ghost', onclick: () => { reIn.value = txt; toast('Placed in the regex box'); reIn.scrollIntoView({ block: 'center', behavior: 'smooth' }); } }, 'Use as regex input')));
+});
+
+/* ---------- tabs ---------- */
+function showTab(name) {
+  $$('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
+  $$('.panel').forEach(p => p.hidden = p.id !== 'panel-' + name);
+}
+$$('.tab').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+
+/* ---------- start ---------- */
+M = loadSaved() || fromExample(EXAMPLES[0]);
+$('#tstr').value = EXAMPLES[0].s;
+$('#batch').value = EXAMPLES[0].b;
+structure();
+reBuild();
+</script>
+</body>
+</html>
